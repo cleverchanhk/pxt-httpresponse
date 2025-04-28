@@ -146,27 +146,30 @@ namespace iot {
             result = waitAtResponse("OK", "ERROR", "None", 2000)
         }
         let buffer = ""
-        while (!(buffer.includes("CLOSED"))) {
+        while (true) {
             sendAtCmd("AT+CIPRECVDATA=1024")
-            buffer = serial.readString()
-            if (buffer.includes(target1)) break
-            if (buffer.includes(target2)) return 2
-            if (buffer.includes(target3)) return 3
-            basic.showString(buffer)
-            basic.pause(100)
+            while (true) {
+                buffer = serial.readString()
+                if (buffer.includes("CLOSED")) break
+                if (buffer.includes(target2)) return 2
+                if (buffer.includes(target3)) return 3
+                basic.showString(buffer)
+                basic.pause(100)
+            }
         }
 
+        return 0
+    }
+
+    export function reset() {
         sendAtCmd("AT+CIPRECVMODE=0")
-        result = waitAtResponse("OK", "ERROR", "None", 2000)
+        let result = waitAtResponse("OK", "ERROR", "None", 2000)
         while (result == 2) {
             sendAtCmd("AT+CIPRECVMODE=0")
             result = waitAtResponse("OK", "ERROR", "None", 2000)
         }
-
         basic.showIcon(IconNames.Heart)
-        return 0
     }
-
     function sendAtCmd(cmd: string) {
         serial.writeString(cmd + "\u000D\u000A")
     }
