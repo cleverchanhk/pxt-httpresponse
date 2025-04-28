@@ -148,11 +148,10 @@ namespace iot {
         let buffer = ""
         let start = input.runningTime()
 
-        buffer = ""
         while (!(buffer.includes("CLOSED"))) {
             sendAtCmd("AT+CIPRECVDATA=1024")
             result = waitAtResponse("OK", "ERROR", "None", 2000)
-            buffer += serial.readString()
+            buffer = serial.readString()
             if (buffer.includes(target1)) break
             if (buffer.includes(target2)) {
                 sendAtCmd("AT+CIPRECVMODE=0")
@@ -163,10 +162,9 @@ namespace iot {
                 result = waitAtResponse("OK", "ERROR", "None", 2000)
                 return 3
             }
+            basic.showString(buffer)
             basic.pause(100)
         }
-
-        basic.showString(buffer)
 
         sendAtCmd("AT+CIPRECVMODE=0")
         result = waitAtResponse("OK", "ERROR", "None", 2000)
