@@ -161,6 +161,10 @@ namespace iot {
         return 0
     }
 
+    /**
+     * Reset the transmission mode to active mode
+     */
+    //% block="Reset transmission mode"
     export function reset() {
         sendAtCmd("AT+CIPRECVMODE=0")
         let result = waitAtResponse("OK", "ERROR", "None", 2000)
@@ -170,6 +174,7 @@ namespace iot {
         }
         basic.showIcon(IconNames.Heart)
     }
+    
     function sendAtCmd(cmd: string) {
         serial.writeString(cmd + "\u000D\u000A")
     }
