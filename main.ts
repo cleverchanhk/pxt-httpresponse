@@ -174,6 +174,8 @@ namespace iot {
             sendAtCmd("AT+CIPRECVMODE=0")
             result3 = waitAtResponse("OK", "ERROR", "None", 2000)
         }
+
+        basic.showIcon(IconNames.Heart)
         return 0
     }
 
