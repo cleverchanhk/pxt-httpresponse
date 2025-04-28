@@ -9,11 +9,6 @@ enum HttpMethod {
     CONNECT,
     TRACE
 }
-
-/**
- * IoT commands.
- */
-//% color=#34c3a2 icon="\uf1eb" block="IoT"
 namespace iot {
 
     let isWifiConnected = false
@@ -93,7 +88,7 @@ namespace iot {
 
         while (isWifiConnected && retry > 0) {
             retry = retry - 1;
-            sendAtCmd("AT+CIPRECVLEN=2048")
+            sendAtCmd("AT+CIPRECVLEN=1024")
             result = waitAtResponse("OK", "ALREADY CONNECTED", "ERROR", 2000)
             // Establish TCP connection:
             sendAtCmd("AT+CIPSTART=\"TCP\",\"" + host + "\"," + port.toString())
@@ -113,8 +108,11 @@ namespace iot {
             result = waitAtResponse(">", "OK", "ERROR", 2000)
             if (result == 3) continue
             sendAtCmd(data)
-            result = printResponse("SEND OK", "SEND FAIL", "ERROR", 5000)
-
+            result = printResponse("SEND OK", "SEND FAIL", "ERROR", 10000)
+            if (result == 3) continue
+            while (result == 2)
+                result = printResponse("SEND OK", "SEND FAIL", "ERROR", 10000)
+            if (result == 3) continue
             // close the TCP connection
             sendAtCmd("AT+CIPCLOSE")
             waitAtResponse("OK", "ERROR", "None", 2000)
@@ -141,30 +139,41 @@ namespace iot {
     }
 
     function printResponse(target1: string, target2: string, target3: string, timeout: number) {
-        let buffer = ""
-        let start = input.runningTime()
+        sendAtCmd("AT+CIPRECVMODE=1")
+        let result3 = waitAtResponse("OK", "ERROR", "None", 2000)
+        while (result3 == 2) {
+            sendAtCmd("AT+CIPRECVMODE=1")
+            result3 = waitAtResponse("OK", "ERROR", "None", 2000)
+        }
+        let buffer2 = ""
+        let start2 = input.runningTime()
 
-        while ((input.runningTime() - start) < timeout) {
-            buffer += serial.readString()
-
-            if (buffer.includes(target1)) break
-            if (buffer.includes(target2)) return 2
-            if (buffer.includes(target3)) return 3
-
+        buffer2 = ""
+        while (!(buffer2.includes("CLOSED"))) {
+            buffer2 += serial.readString()
+            if (input.runningTime() - start2 >= timeout) break
+            if (buffer2.includes(target1)) break
+            if (buffer2.includes(target2)) {
+                sendAtCmd("AT+CIPRECVMODE=0")
+                result3 = waitAtResponse("OK", "ERROR", "None", 2000)
+                return 2
+            }
+            if (buffer2.includes(target3)) {
+                result3 = waitAtResponse("OK", "ERROR", "None", 2000)
+                return 3
+            }
             basic.pause(100)
         }
 
-        buffer = ""
-        start = input.runningTime()
+        buffer2 = buffer2.slice(0, buffer2.length-6)
+        basic.showString(buffer2)
 
-        while (!(buffer.includes("CLOSED"))) {
-            buffer += serial.readString()
-
-            basic.pause(100)
+        sendAtCmd("AT+CIPRECVMODE=0")
+        result3 = waitAtResponse("OK", "ERROR", "None", 2000)
+        while (result3 == 2) {
+            sendAtCmd("AT+CIPRECVMODE=0")
+            result3 = waitAtResponse("OK", "ERROR", "None", 2000)
         }
-
-        basic.showString(buffer)
-
         return 0
     }
 
