@@ -93,6 +93,8 @@ namespace iot {
 
         while (isWifiConnected && retry > 0) {
             retry = retry - 1;
+            sendAtCmd("AT+CIPRECVLEN=2048")
+            result = waitAtResponse("OK", "ALREADY CONNECTED", "ERROR", 2000)
             // Establish TCP connection:
             sendAtCmd("AT+CIPSTART=\"TCP\",\"" + host + "\"," + port.toString())
             result = waitAtResponse("OK", "ALREADY CONNECTED", "ERROR", 2000)
