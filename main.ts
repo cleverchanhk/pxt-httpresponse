@@ -165,7 +165,7 @@ namespace iot {
      * Reset the transmission mode to active mode
      */
     //% block="Reset transmission mode"
-    export function reset() {
+    export function reset(): void {
         sendAtCmd("AT+CIPRECVMODE=0")
         let result = waitAtResponse("OK", "ERROR", "None", 2000)
         while (result == 2) {
