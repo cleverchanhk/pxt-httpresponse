@@ -155,7 +155,7 @@ namespace iot {
         buffer = ""
         start = input.runningTime()
 
-        while ((input.runningTime() - start) < timeout) {
+        while (buffer.includes("CLOSED")) {
             buffer += serial.readString()
 
             basic.pause(100)
