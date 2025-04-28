@@ -145,14 +145,23 @@ namespace iot {
         while ((input.runningTime() - start) < timeout) {
             buffer += serial.readString()
 
+            if (buffer.includes(target1)) break
             if (buffer.includes(target2)) return 2
             if (buffer.includes(target3)) return 3
 
             basic.pause(100)
         }
 
+        buffer = ""
+        start = input.runningTime()
+
+        while ((input.runningTime() - start) < timeout) {
+            buffer += serial.readString()
+
+            basic.pause(100)
+        }
+
         basic.showString(buffer)
-        if (buffer.includes(target1)) return 1
 
         return 0
     }
